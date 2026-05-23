@@ -9,7 +9,11 @@ from pydantic import ValidationError
 
 from job_universe.schemas import (
     JOB_POSTING_COLUMNS,
+    CVProfile,
+    CVSkill,
     JobPosting,
+    JobSearchTargeting,
+    JobspyLocation,
     _content_hash,
     _normalize_text,
 )
@@ -126,3 +130,91 @@ class TestContentHash:
 
 def test_columns_list_matches_model():
     assert set(JOB_POSTING_COLUMNS) == set(JobPosting.model_fields.keys())
+
+
+class TestCVProfile:
+    def _valid(self, **overrides):
+        base = {
+            "skills": [
+                {"name": "PyTorch", "kind": "tool", "proficiency": "expert"},
+                {"name": "MLOps", "kind": "skill", "proficiency": "used"},
+            ],
+            "role_titles": ["ML Engineer"],
+            "seniority": "senior",
+            "years_experience": 6.0,
+            "locations_preferred": ["Berlin"],
+            "summary": "ML engineer.",
+        }
+        base.update(overrides)
+        return base
+
+    def test_valid_roundtrip(self):
+        p = CVProfile(**self._valid())
+        assert p.role_titles == ["ML Engineer"]
+        assert p.skills[0].kind == "tool"
+
+    def test_empty_role_titles_rejected(self):
+        with pytest.raises(ValidationError):
+            CVProfile(**self._valid(role_titles=[]))
+
+    def test_skills_kind_constrained(self):
+        with pytest.raises(ValidationError):
+            CVSkill(name="x", kind="invalid")  # type: ignore[arg-type]
+
+    def test_extra_fields_forbidden(self):
+        with pytest.raises(ValidationError):
+            CVProfile(**self._valid(extra="nope"))
+
+    def test_seniority_optional(self):
+        p = CVProfile(**self._valid(seniority=None))
+        assert p.seniority is None
+
+    def test_locations_default_empty(self):
+        payload = self._valid()
+        payload.pop("locations_preferred")
+        p = CVProfile(**payload)
+        assert p.locations_preferred == []
+
+    def test_json_schema_is_well_formed(self):
+        schema = CVProfile.model_json_schema()
+        assert schema["type"] == "object"
+        assert "skills" in schema["properties"]
+        assert "role_titles" in schema["properties"]
+
+
+class TestJobSearchTargeting:
+    def _valid(self, **overrides):
+        base = {
+            "queries": ["ml engineer", "data scientist"],
+            "adzuna_countries": ["de", "gb"],
+            "jobspy_locations": [
+                {"name": "Berlin", "country_indeed": "germany"},
+            ],
+        }
+        base.update(overrides)
+        return base
+
+    def test_valid_roundtrip(self):
+        t = JobSearchTargeting(**self._valid())
+        assert t.adzuna_countries == ["de", "gb"]
+        assert t.jobspy_locations[0].country_indeed == "germany"
+
+    def test_empty_queries_rejected(self):
+        with pytest.raises(ValidationError):
+            JobSearchTargeting(**self._valid(queries=[]))
+
+    def test_unsupported_adzuna_country_rejected(self):
+        with pytest.raises(ValidationError):
+            JobSearchTargeting(**self._valid(adzuna_countries=["zz"]))
+
+    def test_unsupported_jobspy_country_rejected(self):
+        with pytest.raises(ValidationError):
+            JobspyLocation(name="Atlantis", country_indeed="atlantis")  # type: ignore[arg-type]
+
+    def test_json_schema_contains_country_enums(self):
+        schema = JobSearchTargeting.model_json_schema()
+        text = str(schema)
+        # ISO-style Adzuna codes appear as Literal enum values in the schema
+        assert "de" in text and "gb" in text and "us" in text
+        # JobSpy country_indeed values too
+        assert "germany" in text and "uk" in text and "usa" in text

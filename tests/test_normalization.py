@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from job_universe.pipelines.scraping.nodes import (
+from job_universe.scraping import (
     normalize_adzuna,
     normalize_jobspy,
 )

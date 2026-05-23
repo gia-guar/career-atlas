@@ -1,97 +1,19 @@
-# Scraping pipeline parameters.
-# Tunable knobs live here so neither the queries, the rate limit, nor the
-# site list end up hard-coded inside Python modules.
+# Technical knobs for the scraping pipeline.
+#
+# This file intentionally contains NO queries, countries, or locations — all
+# of those are derived from the user's CV by the `cv_extraction` pipeline
+# and arrive via `cv_derived_scraping_params`. The settings below only
+# control *how* the scrape runs once targets have been chosen.
 
 scraping:
   adzuna:
-    # All 19 Adzuna-supported country codes.
-    countries:
-      - gb
-      - us
-      - at
-      - au
-      - be
-      - br
-      - ca
-      - ch
-      - de
-      - es
-      - fr
-      - in
-      - it
-      - mx
-      - nl
-      - nz
-      - pl
-      - sg
-      - za
-    queries:
-      - "machine learning engineer"
-      - "ml engineer"
-      - "data scientist"
-      - "ai engineer"
-      - "applied scientist"
-      - "research engineer machine learning"
-      - "deep learning engineer"
-      - "mlops engineer"
     results_per_page: 50
     max_pages: 5
     max_days_old: 30
-    requests_per_minute: 20
+    requests_per_minute: 20    # Adzuna's hard ceiling is 25 — leave headroom.
   jobspy:
     sites:
       - linkedin
       - indeed
-    # Each entry is one (location, country_indeed) pair the scraper iterates
-    # over. `name` is passed as JobSpy's free-text `location` (LinkedIn /
-    # Glassdoor); `country_indeed` is the Indeed-specific country string.
-    locations:
-      - name: "United Kingdom"
-        country_indeed: "uk"
-      - name: "United States"
-        country_indeed: "usa"
-      - name: "Austria"
-        country_indeed: "austria"
-      - name: "Australia"
-        country_indeed: "australia"
-      - name: "Belgium"
-        country_indeed: "belgium"
-      - name: "Brazil"
-        country_indeed: "brazil"
-      - name: "Canada"
-        country_indeed: "canada"
-      - name: "Switzerland"
-        country_indeed: "switzerland"
-      - name: "Germany"
-        country_indeed: "germany"
-      - name: "Spain"
-        country_indeed: "spain"
-      - name: "France"
-        country_indeed: "france"
-      - name: "India"
-        country_indeed: "india"
-      - name: "Italy"
-        country_indeed: "italy"
-      - name: "Mexico"
-        country_indeed: "mexico"
-      - name: "Netherlands"
-        country_indeed: "netherlands"
-      - name: "New Zealand"
-        country_indeed: "new zealand"
-      - name: "Poland"
-        country_indeed: "poland"
-      - name: "Singapore"
-        country_indeed: "singapore"
-      - name: "South Africa"
-        country_indeed: "south africa"
     results_wanted: 100
-    hours_old: 720
-    queries:
-      - "machine learning engineer"
-      - "ml engineer"
-      - "data scientist"
-      - "ai engineer"
-      - "applied scientist"
-      - "research engineer machine learning"
-      - "deep learning engineer"
-      - "mlops engineer"
+    hours_old: 720             # 30 days

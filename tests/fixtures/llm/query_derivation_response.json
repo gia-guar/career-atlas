@@ -1,0 +1,15 @@
+{
+  "queries": [
+    "mlops engineer aws kubernetes",
+    "computer vision engineer pytorch",
+    "machine learning engineer pytorch",
+    "ml platform engineer",
+    "deep learning engineer computer vision"
+  ],
+  "adzuna_countries": ["de", "gb", "us"],
+  "jobspy_locations": [
+    {"name": "Berlin", "country_indeed": "germany"},
+    {"name": "Munich", "country_indeed": "germany"},
+    {"name": "United Kingdom", "country_indeed": "uk"}
+  ]
+}

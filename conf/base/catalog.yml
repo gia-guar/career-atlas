@@ -1,13 +1,30 @@
-# Persisted datasets for the scraping pipeline.
-# Anything not declared here (e.g. adzuna_raw, jobspy_raw, *_normalized intermediates)
-# defaults to an in-memory dataset.
+# Persisted datasets.
+# Anything not declared here (e.g. adzuna_raw, jobspy_raw, *_normalized
+# intermediates) defaults to an in-memory dataset.
 
+# CV input (drop your CV here)
+cv_raw_text:
+  type: text.TextDataset
+  filepath: data/01_raw/cv/cv.md
+
+# LLM artefacts
+cv_profile:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/cv_profile.json
+
+cv_derived_scraping_params:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/cv_derived_scraping_params.json
+
+# Post-merge intermediate
 postings_normalized:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/postings_normalized.parquet
   save_args:
     index: false
 
+# Cumulative store — same path for the existing-side (Seeded) and output-side
+# (vanilla) entries, per the bootstrap-on-FileNotFoundError trick.
 postings_cumulative_existing:
   type: job_universe.datasets.SeededParquetDataset
   filepath: data/03_primary/job_postings.parquet

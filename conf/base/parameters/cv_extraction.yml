@@ -1,0 +1,36 @@
+# Stage 2: CV extraction parameters.
+#
+# Pick the `hardware_tier` that matches the machine you're running Ollama on
+# — the corresponding `ollama_tag` is the model that gets pulled and called.
+# Override in `conf/local/parameters/cv_extraction.yml` if you want a
+# different tag (e.g. a custom quantization or a remote `*-cloud` variant)
+# without editing this file.
+
+cv_extraction:
+  hardware_tier: mid       # one of: low | mid | high | max
+
+  ollama:
+    host: http://localhost:11434
+    request_timeout_s: 180
+
+  generation:
+    temperature: 0.1
+    num_predict: 4096
+    num_ctx: 16384         # enough context for a long CV
+
+  model_registry:
+    low:
+      ollama_tag: gemma4:e2b
+      label: "Gemma 4 E2B  (~7 GB)  — CPU / 8 GB GPU"
+    mid:
+      ollama_tag: gemma4:e4b
+      label: "Gemma 4 E4B  (~10 GB) — 12 GB GPU"
+    high:
+      ollama_tag: gemma4:26b
+      label: "Gemma 4 26B MoE (~18 GB) — 24 GB GPU"
+    max:
+      ollama_tag: gemma4:31b
+      label: "Gemma 4 31B dense (~20 GB) — 32 GB+ GPU"
+
+  query_derivation:
+    max_extra_queries: 5

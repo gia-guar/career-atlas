@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from job_universe.pipelines.scraping import nodes
-from job_universe.pipelines.scraping.nodes import (
+from job_universe import scraping as nodes
+from job_universe.scraping import (
     empty_postings_frame,
     merge_and_dedupe,
     update_cumulative,

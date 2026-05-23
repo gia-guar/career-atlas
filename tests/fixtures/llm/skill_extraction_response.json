@@ -1,0 +1,23 @@
+{
+  "skills": [
+    {"name": "Python", "kind": "tool", "proficiency": "expert", "evidence": "Skills: Python"},
+    {"name": "PyTorch", "kind": "tool", "proficiency": "expert", "evidence": "migration ... to PyTorch 2.x"},
+    {"name": "TensorFlow", "kind": "tool", "proficiency": "used", "evidence": "TensorFlow 1.x"},
+    {"name": "scikit-learn", "kind": "tool", "proficiency": "used", "evidence": "churn-prediction models in scikit-learn"},
+    {"name": "XGBoost", "kind": "tool", "proficiency": "used", "evidence": "scikit-learn and XGBoost"},
+    {"name": "AWS", "kind": "tool", "proficiency": "expert", "evidence": "MLOps pipeline on AWS (SageMaker, S3, Lambda)"},
+    {"name": "Kubernetes", "kind": "tool", "proficiency": "expert", "evidence": "AWS ... and Kubernetes"},
+    {"name": "MLOps", "kind": "skill", "proficiency": "expert", "evidence": "Designed and deployed an MLOps pipeline"},
+    {"name": "Computer Vision", "kind": "skill", "proficiency": "expert", "evidence": "computer-vision quality-control system using YOLOv8"},
+    {"name": "Time-Series Forecasting", "kind": "skill", "proficiency": "used", "evidence": "time-series forecasting service (Prophet, statsmodels)"}
+  ],
+  "role_titles": [
+    "Senior Machine Learning Engineer",
+    "MLOps Engineer",
+    "Computer Vision Engineer"
+  ],
+  "seniority": "senior",
+  "years_experience": 8.0,
+  "locations_preferred": ["Berlin"],
+  "summary": "Senior ML engineer with strong MLOps and computer-vision experience, AWS- and PyTorch-focused."
+}

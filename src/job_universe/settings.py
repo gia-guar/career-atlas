@@ -2,9 +2,9 @@
 from the Kedro defaults. For further information, including these default values, see
 https://docs.kedro.org/en/stable/configure/configuration_basics/#configuration"""
 
-from job_universe.hooks import CredentialsHook
+from job_universe.hooks import CredentialsHook, OllamaClientHook
 
-HOOKS = (CredentialsHook(),)
+HOOKS = (CredentialsHook(), OllamaClientHook())
 
 # Installed plugins for which to disable hook auto-registration.
 # DISABLE_HOOKS_FOR_PLUGINS = ("kedro-viz",)

@@ -84,3 +84,89 @@ class JobPosting(BaseModel):
 
 
 JOB_POSTING_COLUMNS: tuple[str, ...] = tuple(JobPosting.model_fields.keys())
+
+
+# ---------------------------------------------------------------------------
+# Stage 2: CV profile (skills / tools extracted from a user CV by the LLM)
+# ---------------------------------------------------------------------------
+
+SkillKind = Literal["skill", "tool"]
+Proficiency = Literal["mentioned", "used", "expert"]
+Seniority = Literal["junior", "mid", "senior", "staff", "principal"]
+
+
+class CVSkill(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    kind: SkillKind
+    proficiency: Proficiency | None = None
+    evidence: str | None = None
+
+
+class CVProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    skills: list[CVSkill]
+    role_titles: list[str]
+    seniority: Seniority | None = None
+    years_experience: float | None = None
+    locations_preferred: list[str] = []
+    summary: str | None = None
+
+    @field_validator("role_titles")
+    @classmethod
+    def _require_at_least_one_role(cls, v: list[str]) -> list[str]:
+        if not v:
+            raise ValueError("role_titles must contain at least one entry")
+        return v
+
+
+# ---------------------------------------------------------------------------
+# Job-search targeting (LLM-derived from CVProfile, drives the scrape)
+# ---------------------------------------------------------------------------
+#
+# Both enums are constrained to what the providers actually accept — this
+# means the LLM cannot hallucinate an unsupported country, because Ollama's
+# JSON-schema `format` rejects values outside the Literal set.
+
+AdzunaCountry = Literal[
+    "gb", "us", "at", "au", "be", "br", "ca", "ch", "de", "es",
+    "fr", "in", "it", "mx", "nl", "nz", "pl", "sg", "za",
+]
+
+JobspyCountry = Literal[
+    "uk", "usa", "austria", "australia", "belgium", "brazil", "canada",
+    "switzerland", "germany", "spain", "france", "india", "italy",
+    "mexico", "netherlands", "new zealand", "poland", "singapore",
+    "south africa",
+]
+
+
+class JobspyLocation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str
+    country_indeed: JobspyCountry
+
+
+class JobSearchTargeting(BaseModel):
+    """LLM-derived search plan: where and what to look for.
+
+    Built from a `CVProfile` by `derive_targeted_scraping_params`. Combined
+    with the technical knobs in `params:scraping` (rate limits, sites,
+    max_pages, etc.) to produce the final scraping-params dict consumed by
+    the existing fetch/normalize/dedupe nodes.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    queries: list[str]
+    adzuna_countries: list[AdzunaCountry]
+    jobspy_locations: list[JobspyLocation]
+
+    @field_validator("queries")
+    @classmethod
+    def _require_queries(cls, v: list[str]) -> list[str]:
+        if not v:
+            raise ValueError("queries must contain at least one entry")
+        return v

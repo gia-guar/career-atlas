@@ -1,4 +1,10 @@
-"""Scraping pipeline nodes: fetch, normalize, dedupe, merge."""
+"""Reusable scraping helpers: fetch / normalize / dedupe / merge / append.
+
+These functions are provider-agnostic w.r.t. *what* is scraped — the
+caller passes the search config (queries, countries, locations) as a dict.
+The CV-driven pipeline derives that config from the user's CV via the LLM;
+nothing here is specific to ML/AI or any other profession.
+"""
 
 from __future__ import annotations
 
@@ -49,8 +55,11 @@ def fetch_adzuna(
         return []
 
     cfg = params.get("adzuna", {})
-    countries = cfg.get("countries", ["de"])
+    countries = cfg.get("countries", [])
     queries = cfg.get("queries", [])
+    if not countries or not queries:
+        logger.info("adzuna fetch skipped — no countries or queries configured")
+        return []
     rpm = cfg.get("requests_per_minute", 20)
     results_per_page = cfg.get("results_per_page", 50)
     max_pages = cfg.get("max_pages", 5)
@@ -84,17 +93,15 @@ def fetch_adzuna(
 def fetch_jobspy(params: dict[str, Any]) -> pd.DataFrame:
     """Fetch postings from JobSpy across the configured queries × locations × sites."""
     cfg = params.get("jobspy", {})
-    sites = cfg.get("sites", ["linkedin", "indeed", "glassdoor"])
+    sites = cfg.get("sites", ["linkedin", "indeed"])
     queries = cfg.get("queries", [])
     results_wanted = cfg.get("results_wanted", 100)
     hours_old = cfg.get("hours_old", 720)
 
-    locations = cfg.get("locations")
-    if not locations:
-        # Backwards-compat single-location config.
-        single_loc = cfg.get("location")
-        single_ci = cfg.get("country_indeed", single_loc or "Germany")
-        locations = [{"name": single_loc, "country_indeed": single_ci}]
+    locations = cfg.get("locations") or []
+    if not locations or not queries:
+        logger.info("jobspy fetch skipped — no locations or queries configured")
+        return pd.DataFrame()
 
     frames: list[pd.DataFrame] = []
     for loc in locations:
@@ -320,16 +327,12 @@ def merge_and_dedupe(
     desc_len = work["description"].fillna("").astype(str).str.len()
     is_linkedin_with_desc = ((work["source"] == "linkedin") & (desc_len > 0)).astype(int)
     src_priority = work["source"].map(_SOURCE_PRIORITY).fillna(99)
-    # Sort so the *winner* per id ends up first:
-    #   lk_with_desc desc (1 beats 0), desc_len desc, src_priority asc
     work = work.assign(
         _lk=-is_linkedin_with_desc,
         _dl=-desc_len,
         _sp=src_priority,
     ).sort_values(by=["id", "_lk", "_dl", "_sp"], kind="stable")
 
-    # Build plain python dicts/bools keyed by id; using `groupby.apply(lambda → dict)`
-    # makes pandas auto-coerce the value to NaN, so we materialise manually.
     merged_raw: dict[str, dict[str, Any]] = {}
     is_remote_any: dict[str, bool] = {}
     for gid, group in work.groupby("id", sort=False):
