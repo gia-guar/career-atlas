@@ -1,0 +1,19 @@
+# Persisted datasets for the scraping pipeline.
+# Anything not declared here (e.g. adzuna_raw, jobspy_raw, *_normalized intermediates)
+# defaults to an in-memory dataset.
+
+postings_normalized:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/postings_normalized.parquet
+  save_args:
+    index: false
+
+postings_cumulative_existing:
+  type: job_universe.datasets.SeededParquetDataset
+  filepath: data/03_primary/job_postings.parquet
+
+postings_cumulative:
+  type: pandas.ParquetDataset
+  filepath: data/03_primary/job_postings.parquet
+  save_args:
+    index: false
