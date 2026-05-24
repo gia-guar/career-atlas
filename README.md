@@ -2,7 +2,8 @@
 
 [![Built on Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
 
-<div style="text-align: center;">
+<center>
+
 <img src="assets/logo.png" alt="skill-graph-logo" style="width: 300px; height: 300px;">
 
 ## What am I looking at?
@@ -173,7 +174,7 @@ Three YAML files in `conf/base/parameters/`:
   graph filters (`min_node_count`, `min_cooccurrence`, `min_pmi`), and
   visualization style. The Stage-3 LLM tier is read from
   `cv_extraction.yml` — one source of truth.
-</div>
+</center>
 
 ## Project layout
 
