@@ -16,13 +16,13 @@ grow highly requested skills.
 
 <p float="left">
 
-<img src="data/assets/linkedinlogo.png" style="width: 120px; height: 30px;"> &nbsp; <img src="data/assets/Indeed_logo.svg.png" style="width: 120px; height: 30px;">
+<img src="assets/linkedinlogo.png" style="width: 120px; height: 30px;"> &nbsp; <img src="assets/Indeed_logo.svg.png" style="width: 120px; height: 30px;">
 </p>
 
 
 <p float="left">
-<img src="data/assets/Gemma4logo.png" style="width: 80px; height: 80px; vertical-align: middle;">
-<img src="data/assets/gemma-text.png" style="width: 230px; height: 50px; vertical-align: middle;">
+<img src="assets/Gemma4logo.png" style="width: 80px; height: 80px; vertical-align: middle;">
+<img src="assets/gemma-text.png" style="width: 230px; height: 50px; vertical-align: middle;">
 </p>
 
 ## How it works?
