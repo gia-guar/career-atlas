@@ -170,3 +170,27 @@ class JobSearchTargeting(BaseModel):
         if not v:
             raise ValueError("queries must contain at least one entry")
         return v
+
+
+# ---------------------------------------------------------------------------
+# Stage 3: per-posting skill extraction (LLM reads each posting description)
+# ---------------------------------------------------------------------------
+
+SkillRequirementKind = Literal["skill", "tool", "requirement"]
+
+POSTING_SKILLS_COLUMNS: tuple[str, ...] = ("posting_id", "name", "kind")
+
+
+class PostingSkill(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    kind: SkillRequirementKind
+
+
+class PostingSkills(BaseModel):
+    """Container for the LLM response when extracting skills from a posting."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    skills: list[PostingSkill]

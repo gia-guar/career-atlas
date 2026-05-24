@@ -1,0 +1,11 @@
+{
+  "skills": [
+    {"name": "Python", "kind": "tool"},
+    {"name": "PyTorch", "kind": "tool"},
+    {"name": "AWS", "kind": "tool"},
+    {"name": "distributed training", "kind": "skill"},
+    {"name": "MLOps", "kind": "skill"},
+    {"name": "PhD in Computer Science", "kind": "requirement"},
+    {"name": "5+ years experience", "kind": "requirement"}
+  ]
+}

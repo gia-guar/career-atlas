@@ -1,0 +1,89 @@
+# Stage 3: per-posting skill extraction + canonicalization + graph viz.
+#
+# Tier / Ollama-tag lookups for the extraction LLM come from
+# `cv_extraction.hardware_tier` and `cv_extraction.model_registry` —
+# keeping one source of truth for the LLM choice. The generation knobs
+# below are extraction-specific (posting-skill outputs are shorter than
+# CV outputs, so the budget is tighter).
+
+skill_graph:
+  extraction:
+    generation:
+      temperature: 0.1
+      # 4096 — at 2048 a handful of long postings still hit JSON truncation
+      # (json.JSONDecodeError around char 700-1000). Matches cv_extraction's
+      # budget; cost grows linearly per posting but cv_extraction proved this
+      # tier is tolerable.
+      num_predict: 4096
+      num_ctx: 8192
+
+  canonicalize:
+    # HuggingFace model id; resolved by sentence-transformers.
+    model: nomic-ai/nomic-embed-text-v1.5
+    # Nomic-specific task prefix prepended to every input before embedding.
+    encode_prefix: "clustering: "
+    # Cosine-distance cutoff for AgglomerativeClustering. Smaller = stricter
+    # (more clusters / less merging); larger = looser (fewer clusters).
+    distance_threshold: 0.15
+    batch_size: 64
+
+  categorize:
+    # Second-pass clustering on the *canonical* vocabulary. Coarser than
+    # canonicalize: collapses related concepts (AI / ML / pytorch / mlops)
+    # into one category so the graph can colour-code them. Larger value =
+    # broader groups; smaller = more, finer-grained categories.
+    distance_threshold: 0.45
+
+  graph:
+    # Canonical skill must appear in this many postings to make the chart
+    # (user-owned skills are always kept regardless).
+    min_node_count: 3
+    # Co-occurrence count cutoff for edges.
+    min_cooccurrence: 5
+    # PMI cutoff for edges. Positive ⇒ stronger-than-chance association.
+    min_pmi: 0.5
+
+  viz:
+    background_color: "#000000"
+    node_color_default: "#888888"
+    node_color_user_has: "#3F704D"
+    # 20-tab style categorical palette tuned for the dark background, used by
+    # the interactive UI to colour nodes by their category. Index =
+    # stable hash(category) mod len. The matplotlib PNG ignores this and
+    # keeps the simpler two-tone style (#888888 / #3F704D).
+    category_palette:
+      - "#7FB069"
+      - "#E6A0C4"
+      - "#A89BD4"
+      - "#F4A261"
+      - "#5DA9E9"
+      - "#C9D6E6"
+      - "#D9544D"
+      - "#F0D879"
+      - "#79B4B7"
+      - "#B07AA1"
+      - "#7DCEA0"
+      - "#FFB347"
+      - "#9BB5C9"
+      - "#E59866"
+      - "#85929E"
+      - "#D7BDE2"
+      - "#A3E4D7"
+      - "#F8C471"
+      - "#BB8FCE"
+      - "#82E0AA"
+    # In the UI, user-owned skills keep their category fill colour but get a
+    # green border so they remain visible against any palette colour.
+    user_has_border: "#3F704D"
+    edge_color: "#333333"
+    edge_alpha: 0.3
+    node_alpha: 0.85
+    label_color: "#FFFFFF"
+    label_font_size: 9
+    label_top_n: 30
+    figsize: [16, 16]
+    dpi: 150
+    layout_seed: 42
+    spring_k: 0.7
+    spring_iterations: 200
+    node_size_scale: 40

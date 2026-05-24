@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
+import numpy as np
 from kedro.framework.hooks import hook_impl
 from kedro.io import MemoryDataset
 
 from job_universe.llm import OllamaClient
+from job_universe.web import progress as web_progress
+from job_universe.web.progress import ProgressEmitter
+
+logger = logging.getLogger(__name__)
 
 
 class CredentialsHook:
@@ -62,3 +68,83 @@ class OllamaClientHook:
             timeout_s=float(ollama_cfg.get("request_timeout_s", 180)),
         )
         catalog["ollama_client"] = MemoryDataset(data=client, copy_mode="assign")
+
+
+class SkillEmbedderHook:
+    """Expose a `skill_embedder` callable to nodes via the catalog.
+
+    Lazy-instantiates a `sentence_transformers.SentenceTransformer` on the
+    first call so the heavy torch import never happens for pipelines /
+    tests that don't need it. Subsequent calls reuse the same in-process
+    model.
+
+    `trust_remote_code=True` is required for `nomic-ai/nomic-embed-text-v1.5`
+    because Nomic ships custom modeling code in their HF repo — do not
+    remove this without swapping the model.
+
+    `copy_mode="assign"` is load-bearing: the underlying torch model
+    holds non-deepcopy-safe state, same issue as `OllamaClientHook`.
+    """
+
+    @hook_impl
+    def after_catalog_created(
+        self,
+        catalog,
+        conf_catalog: dict[str, Any],
+        conf_creds: dict[str, Any],
+        parameters: dict[str, Any],
+        save_version: str,
+        load_versions: dict[str, str],
+    ) -> None:
+        cfg = (parameters or {}).get("skill_graph", {}).get("canonicalize") or {}
+        model_name = cfg.get("model", "nomic-ai/nomic-embed-text-v1.5")
+        batch_size = int(cfg.get("batch_size", 64))
+
+        # Prefix is owned by the canonicalize layer (see build_canonical_map);
+        # the embedder just encodes whatever strings it's handed.
+        model_state: dict[str, Any] = {"model": None}
+
+        def embed(names: list[str]) -> np.ndarray:
+            if not names:
+                return np.zeros((0, 1), dtype=np.float32)
+            if model_state["model"] is None:
+                from sentence_transformers import SentenceTransformer
+
+                logger.info("loading sentence-transformer %s", model_name)
+                model_state["model"] = SentenceTransformer(
+                    model_name, trust_remote_code=True
+                )
+            return model_state["model"].encode(
+                list(names),
+                normalize_embeddings=True,
+                batch_size=batch_size,
+                show_progress_bar=False,
+            )
+
+        catalog["skill_embedder"] = MemoryDataset(data=embed, copy_mode="assign")
+
+
+class ProgressHook:
+    """Expose a `progress_emitter` to nodes for live UI updates.
+
+    Reads ``job_universe.web.progress.CURRENT`` — set by the web runner before
+    invoking ``KedroSession.run`` and cleared in ``finally``. When the slot is
+    ``None`` (CLI runs, tests) a no-op emitter is registered, so emit-calls
+    inside the pipeline do nothing.
+
+    Same ``copy_mode="assign"`` constraint as the other hook-provided clients:
+    the emitter holds a reference to an asyncio loop which is not deepcopy-safe.
+    """
+
+    @hook_impl
+    def after_catalog_created(
+        self,
+        catalog,
+        conf_catalog: dict[str, Any],
+        conf_creds: dict[str, Any],
+        parameters: dict[str, Any],
+        save_version: str,
+        load_versions: dict[str, str],
+    ) -> None:
+        emitter = web_progress.CURRENT or ProgressEmitter()
+        catalog["progress_emitter"] = MemoryDataset(data=emitter, copy_mode="assign")

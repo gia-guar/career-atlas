@@ -34,3 +34,42 @@ postings_cumulative:
   filepath: data/03_primary/job_postings.parquet
   save_args:
     index: false
+
+# Stage 3: per-posting skill cache (long-format, one row per skill/tool/req).
+# Same dual-entry pattern as the cumulative postings store.
+posting_skills_existing:
+  type: job_universe.datasets.SeededParquetDataset
+  filepath: data/02_intermediate/posting_skills.parquet
+  empty_columns: [posting_id, name, kind]
+
+posting_skills:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/posting_skills.parquet
+  save_args:
+    index: false
+
+# Stage 3: derived artifacts.
+canonical_skill_map:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/canonical_skill_map.json
+
+skill_category_map:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/skill_category_map.json
+
+skill_graph_data:
+  type: json.JSONDataset
+  filepath: data/02_intermediate/skill_graph.json
+
+skill_graph_png:
+  type: matplotlib.MatplotlibDataset
+  filepath: data/08_reporting/skill_graph.png
+  save_args:
+    facecolor: "#000000"
+    dpi: 150
+
+skill_graph_nodes_csv:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/skill_graph_nodes.csv
+  save_args:
+    index: false

@@ -44,9 +44,17 @@ def empty_postings_frame() -> pd.DataFrame:
 
 
 def fetch_adzuna(
-    params: dict[str, Any], credentials: dict[str, Any]
+    params: dict[str, Any],
+    credentials: dict[str, Any],
+    progress_emitter: Any | None = None,
 ) -> list[dict[str, Any]]:
-    """Fetch postings from Adzuna across the configured queries × countries."""
+    """Fetch postings from Adzuna across the configured queries × countries.
+
+    ``progress_emitter`` (a ``ProgressEmitter`` or duck-typed equivalent with
+    an ``emit(event_type, value)`` method) is optional; passed ``None`` from
+    CLI runs and gets the live emitter from the UI runner. Emits the running
+    total of fetched rows after each query.
+    """
     creds = credentials.get("adzuna") or {}
     app_id = creds.get("app_id")
     app_key = creds.get("app_key")
@@ -86,12 +94,22 @@ def fetch_adzuna(
                     row["_search_country"] = country
                     row["_search_query"] = query
                 out.extend(rows)
+                if progress_emitter is not None and rows:
+                    progress_emitter.incr("postings_count", by=len(rows))
     logger.info("adzuna fetched %d rows", len(out))
     return out
 
 
-def fetch_jobspy(params: dict[str, Any]) -> pd.DataFrame:
-    """Fetch postings from JobSpy across the configured queries × locations × sites."""
+def fetch_jobspy(
+    params: dict[str, Any],
+    progress_emitter: Any | None = None,
+) -> pd.DataFrame:
+    """Fetch postings from JobSpy across the configured queries × locations × sites.
+
+    ``progress_emitter`` increments the shared ``postings_count`` counter as
+    rows arrive — Adzuna already incremented its share, so the UI counter
+    just keeps going up.
+    """
     cfg = params.get("jobspy", {})
     sites = cfg.get("sites", ["linkedin", "indeed"])
     queries = cfg.get("queries", [])
@@ -122,6 +140,8 @@ def fetch_jobspy(params: dict[str, Any]) -> pd.DataFrame:
                 df = df.copy()
                 df["_search_location"] = location
                 frames.append(df)
+                if progress_emitter is not None:
+                    progress_emitter.incr("postings_count", by=len(df))
     if not frames:
         logger.info("jobspy returned 0 rows across all queries × locations")
         return pd.DataFrame()

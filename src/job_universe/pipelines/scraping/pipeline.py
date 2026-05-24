@@ -19,13 +19,13 @@ def create_pipeline(**_kwargs) -> Pipeline:
         [
             node(
                 func=scraping.fetch_adzuna,
-                inputs=["cv_derived_scraping_params", "credentials"],
+                inputs=["cv_derived_scraping_params", "credentials", "progress_emitter"],
                 outputs="adzuna_raw",
                 name="fetch_adzuna",
             ),
             node(
                 func=scraping.fetch_jobspy,
-                inputs="cv_derived_scraping_params",
+                inputs=["cv_derived_scraping_params", "progress_emitter"],
                 outputs="jobspy_raw",
                 name="fetch_jobspy",
             ),

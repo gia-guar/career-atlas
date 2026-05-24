@@ -34,3 +34,24 @@ cv_extraction:
 
   query_derivation:
     max_extra_queries: 5
+
+  # ---------------------------------------------------------------------------
+  # Optional: override the LLM-derived geographic targeting. Set this block in
+  # conf/local/parameters/cv_extraction.yml (the base config stays profession-
+  # and country-agnostic per the project rule). When present, the keys below
+  # REPLACE the corresponding fields in cv_derived_scraping_params.json.
+
+  # # Example: search across Europe.
+  # ---------------------------------------------------------------------------
+  targeting_overrides:
+
+    adzuna_countries: [gb, de, fr, nl, it, es, pl, at, ch, be, us]
+    jobspy_locations:
+      - {name: "United Kingdom", country_indeed: "uk"}
+      - {name: "Germany",        country_indeed: "germany"}
+      - {name: "France",         country_indeed: "france"}
+      - {name: "Netherlands",    country_indeed: "netherlands"}
+      - {name: "Italy",          country_indeed: "italy"}
+      - {name: "Spain",          country_indeed: "spain"}
+      - {name: "United States",   country_indeed: "us"}
+    extra_queries: []

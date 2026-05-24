@@ -99,7 +99,13 @@ class OllamaClient:
         body = resp.json()
         content = (body.get("message") or {}).get("content")
         if not isinstance(content, str) or not content.strip():
+            # Include done_reason + eval_count so the caller can tell
+            # "num_predict exhausted" ('length') from a genuine empty
+            # generation ('stop') without inspecting the server logs.
             raise OllamaError(
-                f"ollama response missing message.content; got keys {list(body)}"
+                f"ollama response missing message.content; "
+                f"done_reason={body.get('done_reason')!r} "
+                f"eval_count={body.get('eval_count')!r} "
+                f"keys={list(body)}"
             )
         return json.loads(content)

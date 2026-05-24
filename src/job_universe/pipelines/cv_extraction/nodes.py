@@ -93,18 +93,38 @@ def derive_targeted_scraping_params(
             seen.add(key)
             queries.append(q.strip())
 
+    # Optional overrides from conf/local/parameters/cv_extraction.yml. They
+    # are applied AFTER the LLM proposes its plan so the user can broaden
+    # (e.g. Europe-wide) or replace targeting without re-prompting the model.
+    overrides = (cv_params or {}).get("targeting_overrides") or {}
+    if "extra_queries" in overrides:
+        for q in overrides["extra_queries"] or []:
+            key = q.lower().strip()
+            if key and key not in seen:
+                seen.add(key)
+                queries.append(q.strip())
+
     out = json.loads(json.dumps(base_scraping_params))  # deep copy via JSON
     out.setdefault("adzuna", {})
     out["adzuna"]["queries"] = queries
-    out["adzuna"]["countries"] = list(target.adzuna_countries)
+    out["adzuna"]["countries"] = (
+        list(overrides["adzuna_countries"])
+        if "adzuna_countries" in overrides
+        else list(target.adzuna_countries)
+    )
     out.setdefault("jobspy", {})
     out["jobspy"]["queries"] = queries
-    out["jobspy"]["locations"] = [loc.model_dump() for loc in target.jobspy_locations]
+    out["jobspy"]["locations"] = (
+        list(overrides["jobspy_locations"])
+        if "jobspy_locations" in overrides
+        else [loc.model_dump() for loc in target.jobspy_locations]
+    )
 
     logger.info(
-        "scraping plan: %d queries × %d Adzuna countries × %d JobSpy locations",
+        "scraping plan: %d queries × %d Adzuna countries × %d JobSpy locations%s",
         len(queries),
-        len(target.adzuna_countries),
-        len(target.jobspy_locations),
+        len(out["adzuna"]["countries"]),
+        len(out["jobspy"]["locations"]),
+        " (overrides applied)" if overrides else "",
     )
     return out

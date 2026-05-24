@@ -16,4 +16,4 @@ scraping:
       - linkedin
       - indeed
     results_wanted: 100
-    hours_old: 720             # 30 days
+    hours_old: 1440             # 30 days

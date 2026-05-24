@@ -2,9 +2,19 @@
 from the Kedro defaults. For further information, including these default values, see
 https://docs.kedro.org/en/stable/configure/configuration_basics/#configuration"""
 
-from job_universe.hooks import CredentialsHook, OllamaClientHook
+from job_universe.hooks import (
+    CredentialsHook,
+    OllamaClientHook,
+    ProgressHook,
+    SkillEmbedderHook,
+)
 
-HOOKS = (CredentialsHook(), OllamaClientHook())
+HOOKS = (
+    CredentialsHook(),
+    OllamaClientHook(),
+    SkillEmbedderHook(),
+    ProgressHook(),
+)
 
 # Installed plugins for which to disable hook auto-registration.
 # DISABLE_HOOKS_FOR_PLUGINS = ("kedro-viz",)
@@ -33,6 +43,13 @@ HOOKS = (CredentialsHook(), OllamaClientHook())
 CONFIG_LOADER_ARGS = {
     "base_env": "base",
     "default_run_env": "local",
+    # Deep-merge parameters so a local file can override a single nested key
+    # (e.g. cv_extraction.targeting_overrides) without having to redeclare
+    # the whole cv_extraction block. Kedro's default is "destructive" — a
+    # shallow dict.update that replaces top-level keys outright.
+    "merge_strategy": {
+        "parameters": "soft",
+    },
     # "config_patterns": {
     #     "spark" : ["spark*/"],
     #     "parameters": ["parameters*", "parameters*/**", "**/parameters*"],
