@@ -3,7 +3,7 @@
 [![Built on Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
 
 <div style="text-align: center;">
-<img src="data/logo.png" alt="A beautiful landscape" style="width: 300px; height: 300px;">
+<img src="assets/logo.png" alt="skill-graph-logo" style="width: 300px; height: 300px;">
 
 ## What am I looking at?
 
