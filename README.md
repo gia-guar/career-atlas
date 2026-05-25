@@ -5,7 +5,7 @@
 <div align="center">
 <img src="assets/logo.png" alt="CareerAtlas logo" style="width: 300px; height: 300px;">
 </div>
-# CareerAtlas
+
 
 ### Explore where your skills sit in the global job market
 
