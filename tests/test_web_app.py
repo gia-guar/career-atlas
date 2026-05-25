@@ -7,7 +7,7 @@ network, or the embedding model. We exercise:
 * ``/api/cv``    — writes the CV, runs the pipeline (stubbed), returns parsed JSON
 * ``/api/build`` — kicks off a job, the second concurrent call returns 409
 * ``/api/build/events`` — SSE stream emits queued events and terminates on done
-* ``/api/graph`` — returns the on-disk JSON
+* ``/api/map`` — returns the on-disk JSON
 """
 
 from __future__ import annotations
@@ -20,8 +20,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from job_universe.web import app as web_app
-from job_universe.web import runner
+from career_atlas.web import app as web_app
+from career_atlas.web import runner
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def client(tmp_path, monkeypatch):
         runner, "_POSTINGS_PATH", data_root / "03_primary" / "job_postings.parquet"
     )
     monkeypatch.setattr(
-        runner, "_GRAPH_JSON_PATH", data_root / "02_intermediate" / "skill_graph.json"
+        runner, "_MAP_JSON_PATH", data_root / "02_intermediate" / "skill_map.json"
     )
     monkeypatch.setattr(
         runner,
@@ -110,7 +110,7 @@ def test_status_reports_missing_artifacts(client):
     assert r.json() == {
         "has_cv_profile": False,
         "has_postings": False,
-        "has_graph": False,
+        "has_map": False,
     }
 
 
@@ -133,14 +133,14 @@ def test_cv_endpoint_rejects_empty_body(client):
 
 
 def test_graph_endpoint_404_until_built(client):
-    r = client.get("/api/graph")
+    r = client.get("/api/map")
     assert r.status_code == 404
 
 
 def test_graph_endpoint_returns_on_disk_json(client):
     graph = {"nodes": [{"id": "python", "count": 5, "user_has": True}], "edges": []}
-    runner._GRAPH_JSON_PATH.write_text(json.dumps(graph))
-    r = client.get("/api/graph")
+    runner._MAP_JSON_PATH.write_text(json.dumps(graph))
+    r = client.get("/api/map")
     assert r.status_code == 200
     assert r.json() == graph
 
@@ -218,7 +218,7 @@ def test_build_events_unknown_job_id(client):
 def test_index_html_is_served(client):
     r = client.get("/")
     assert r.status_code == 200
-    assert "SKILL-GRAPH" in r.text
+    assert "CAREER-ATLAS" in r.text
 
 
 def test_static_assets_served(client):

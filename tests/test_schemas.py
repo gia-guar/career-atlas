@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from job_universe.schemas import (
+from career_atlas.schemas import (
     JOB_POSTING_COLUMNS,
     CVProfile,
     CVSkill,

@@ -8,7 +8,7 @@ import httpx
 import pytest
 import respx
 
-from job_universe.llm.client import OllamaClient, OllamaError
+from career_atlas.llm.client import OllamaClient, OllamaError
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 

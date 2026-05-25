@@ -7,7 +7,7 @@ import threading
 
 import pytest
 
-from job_universe.web.progress import ProgressEmitter
+from career_atlas.web.progress import ProgressEmitter
 
 
 class TestUnbound:

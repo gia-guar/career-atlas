@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from job_universe import scraping
-from job_universe.pipelines.cv_extraction import create_pipeline as cv_pipeline
-from job_universe.pipelines.scraping import create_pipeline as scraping_pipeline
+from career_atlas import scraping
+from career_atlas.pipelines.cv_extraction import create_pipeline as cv_pipeline
+from career_atlas.pipelines.scraping import create_pipeline as scraping_pipeline
 
 
 def _node_by_name(pipeline, name):

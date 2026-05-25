@@ -26,7 +26,7 @@ postings_normalized:
 # Cumulative store — same path for the existing-side (Seeded) and output-side
 # (vanilla) entries, per the bootstrap-on-FileNotFoundError trick.
 postings_cumulative_existing:
-  type: job_universe.datasets.SeededParquetDataset
+  type: career_atlas.datasets.SeededParquetDataset
   filepath: data/03_primary/job_postings.parquet
 
 postings_cumulative:
@@ -38,7 +38,7 @@ postings_cumulative:
 # Stage 3: per-posting skill cache (long-format, one row per skill/tool/req).
 # Same dual-entry pattern as the cumulative postings store.
 posting_skills_existing:
-  type: job_universe.datasets.SeededParquetDataset
+  type: career_atlas.datasets.SeededParquetDataset
   filepath: data/02_intermediate/posting_skills.parquet
   empty_columns: [posting_id, name, kind]
 
@@ -57,19 +57,19 @@ skill_category_map:
   type: json.JSONDataset
   filepath: data/02_intermediate/skill_category_map.json
 
-skill_graph_data:
+skill_map_data:
   type: json.JSONDataset
-  filepath: data/02_intermediate/skill_graph.json
+  filepath: data/02_intermediate/skill_map.json
 
-skill_graph_png:
+skill_map_png:
   type: matplotlib.MatplotlibDataset
-  filepath: data/08_reporting/skill_graph.png
+  filepath: data/08_reporting/skill_map.png
   save_args:
     facecolor: "#000000"
     dpi: 150
 
-skill_graph_nodes_csv:
+skill_map_nodes_csv:
   type: pandas.CSVDataset
-  filepath: data/08_reporting/skill_graph_nodes.csv
+  filepath: data/08_reporting/skill_map_nodes.csv
   save_args:
     index: false

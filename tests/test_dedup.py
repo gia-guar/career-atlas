@@ -6,13 +6,13 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from job_universe import scraping as nodes
-from job_universe.scraping import (
+from career_atlas import scraping as nodes
+from career_atlas.scraping import (
     empty_postings_frame,
     merge_and_dedupe,
     update_cumulative,
 )
-from job_universe.schemas import JOB_POSTING_COLUMNS
+from career_atlas.schemas import JOB_POSTING_COLUMNS
 
 
 def _row(

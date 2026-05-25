@@ -5,10 +5,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from job_universe.canonicalize import (
+from career_atlas.canonicalize import (
     build_canonical_map,
     build_category_map,
     collect_raw_counts,
+    compute_tsne_positions,
     normalize_skill,
     pick_canonical_name,
 )
@@ -225,6 +226,71 @@ class TestBuildCategoryMap:
         vectors = {"foo": np.array([1.0, 0.0]), "bar": np.array([0.0, 1.0])}
         embedder = _FixedVectorEmbedder(vectors)
         build_category_map(["foo", "bar"], embedder, encode_prefix="clustering: ")
+        for batch in embedder.calls:
+            for s in batch:
+                assert s.startswith("clustering: ")
+
+
+class TestComputeTsnePositions:
+    def test_empty_returns_empty(self):
+        embedder = _FixedVectorEmbedder({"foo": np.array([1.0, 0.0])})
+        assert compute_tsne_positions([], embedder) == {}
+        assert embedder.calls == []
+
+    def test_single_name_short_circuits_to_origin(self):
+        embedder = _FixedVectorEmbedder({"foo": np.array([1.0, 0.0])})
+        out = compute_tsne_positions(["foo"], embedder)
+        assert out == {"foo": {"x": 0.0, "y": 0.0}}
+        assert embedder.calls == []
+
+    def test_clustered_inputs_stay_clustered_in_2d(self):
+        # Two semantic clusters: A-family near [1,0,…], B-family near [0,1,…].
+        # t-SNE should keep A points closer to each other than to B points.
+        # Use a wider feature dim so sklearn doesn't refuse to fit.
+        dim = 16
+        vectors = {}
+        for i, name in enumerate(["a1", "a2", "a3", "a4", "a5"]):
+            v = np.zeros(dim)
+            v[0] = 1.0
+            v[1] = 0.05 * i  # tiny within-cluster spread
+            vectors[name] = v
+        for i, name in enumerate(["b1", "b2", "b3", "b4", "b5"]):
+            v = np.zeros(dim)
+            v[dim - 1] = 1.0
+            v[dim - 2] = 0.05 * i
+            vectors[name] = v
+        embedder = _FixedVectorEmbedder(vectors)
+
+        names = list(vectors.keys())
+        out = compute_tsne_positions(
+            names, embedder, perplexity=3.0, random_state=42
+        )
+        assert set(out.keys()) == set(names)
+        # All positions are roughly in [-1, 1].
+        for p in out.values():
+            assert -1.05 <= p["x"] <= 1.05
+            assert -1.05 <= p["y"] <= 1.05
+
+        def dist(a, b):
+            pa, pb = out[a], out[b]
+            return ((pa["x"] - pb["x"]) ** 2 + (pa["y"] - pb["y"]) ** 2) ** 0.5
+
+        # Average within-A distance must be smaller than average A↔B distance.
+        a_pairs = [("a1", "a2"), ("a1", "a3"), ("a2", "a3"), ("a3", "a4")]
+        cross_pairs = [("a1", "b1"), ("a2", "b2"), ("a3", "b3"), ("a4", "b4")]
+        avg_intra = sum(dist(*p) for p in a_pairs) / len(a_pairs)
+        avg_cross = sum(dist(*p) for p in cross_pairs) / len(cross_pairs)
+        assert avg_intra < avg_cross
+
+    def test_prefix_applied_to_embedder_input(self):
+        vectors = {f"name{i}": np.eye(8)[i % 8] for i in range(8)}
+        embedder = _FixedVectorEmbedder(vectors)
+        compute_tsne_positions(
+            list(vectors.keys()),
+            embedder,
+            encode_prefix="clustering: ",
+            perplexity=3.0,
+        )
         for batch in embedder.calls:
             for s in batch:
                 assert s.startswith("clustering: ")

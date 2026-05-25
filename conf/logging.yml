@@ -36,7 +36,7 @@ loggers:
   kedro:
     level: INFO
 
-  job_universe:
+  career_atlas:
     level: INFO
 
 root:

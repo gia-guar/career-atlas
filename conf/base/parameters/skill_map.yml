@@ -1,0 +1,58 @@
+# Stage 3: per-posting skill extraction + canonicalization + graph viz.
+#
+# Tier / Ollama-tag lookups for the extraction LLM come from
+# `cv_extraction.hardware_tier` and `cv_extraction.model_registry` —
+# keeping one source of truth for the LLM choice. The generation knobs
+# below are extraction-specific (posting-skill outputs are shorter than
+# CV outputs, so the budget is tighter).
+
+skill_map:
+  extraction:
+    generation:
+      temperature: 0.1
+      # 4096 — at 2048 a handful of long postings still hit JSON truncation
+      # (json.JSONDecodeError around char 700-1000). Matches cv_extraction's
+      # budget; cost grows linearly per posting but cv_extraction proved this
+      # tier is tolerable.
+      num_predict: 4096
+      num_ctx: 8192
+
+  canonicalize:
+    # HuggingFace model id; resolved by sentence-transformers.
+    model: nomic-ai/nomic-embed-text-v1.5
+    # Nomic-specific task prefix prepended to every input before embedding.
+    encode_prefix: "clustering: "
+    # Cosine-distance cutoff for AgglomerativeClustering. Smaller = stricter
+    # (more clusters / less merging); larger = looser (fewer clusters).
+    distance_threshold: 0.15
+    batch_size: 64
+
+  categorize:
+    # Second-pass clustering on the *canonical* vocabulary. Coarser than
+    # canonicalize (which uses 0.15) but only slightly: Nomic embeddings on
+    # short skill-name tokens have a narrow dynamic range (~0.18-0.40
+    # cosine distance even between totally unrelated concepts). Anything
+    # >= ~0.4 collapses the whole vocabulary into one bucket.
+    distance_threshold: 0.25
+
+  graph:
+    # Canonical skill must appear in this many postings to make the chart
+    # (user-owned skills are always kept regardless).
+    min_node_count: 3
+
+  viz:
+    background_color: "#000000"
+    node_color_default: "#888888"
+    node_color_user_has: "#3F704D"
+    node_alpha: 0.85
+    label_color: "#FFFFFF"
+    label_font_size: 14
+    label_top_n: 15
+    figsize: [16, 16]
+    dpi: 150
+    node_size_scale: 40
+    # t-SNE controls the 2D layout: lower perplexity = tighter local clusters,
+    # higher = smoother global structure. ~30 is sklearn's default; bump to
+    # 40-60 at 1000+ points if clusters look mashed together.
+    tsne_perplexity: 40
+    tsne_random_state: 42

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 requires-python = ">=3.10"
-name = "job_universe"
+name = "career_atlas"
 readme = "README.md"
 dynamic = [
     "version",
@@ -35,8 +35,8 @@ dependencies = [
 ]
 
 [project.scripts]
-job-universe = "job_universe.__main__:main"
-job-universe-ui = "job_universe.web.app:run"
+career-atlas = "career_atlas.__main__:main"
+career-atlas-ui = "career_atlas.web.app:run"
 
 [project.entry-points."kedro.hooks"]
 
@@ -51,7 +51,7 @@ dev = [
 ]
 
 [tool.setuptools.dynamic.version]
-attr = "job_universe.__version__"
+attr = "career_atlas.__version__"
 
 [tool.setuptools.packages.find]
 where = [
@@ -60,15 +60,15 @@ where = [
 namespaces = false
 
 [tool.kedro]
-package_name = "job_universe"
-project_name = "job-universe"
+package_name = "career_atlas"
+project_name = "career-atlas"
 kedro_init_version = "1.4.0"
 tools = "['Linting', 'Testing', 'Custom Logging', 'Data Structure']"
 example_pipeline = "False"
 source_dir = "src"
 
 [tool.pytest.ini_options]
-addopts = "--cov-report term-missing --cov src/job_universe -ra"
+addopts = "--cov-report term-missing --cov src/career_atlas -ra"
 
 [tool.coverage.report]
 fail_under = 0

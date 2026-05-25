@@ -6,11 +6,11 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from job_universe.scraping import (
+from career_atlas.scraping import (
     normalize_adzuna,
     normalize_jobspy,
 )
-from job_universe.schemas import JOB_POSTING_COLUMNS, JobPosting
+from career_atlas.schemas import JOB_POSTING_COLUMNS, JobPosting
 
 
 ADZUNA_SAMPLE = {

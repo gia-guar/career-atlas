@@ -13,7 +13,7 @@ from typing import Any
 import httpx
 import pytest
 
-from job_universe.clients.adzuna import AdzunaClient
+from career_atlas.clients.adzuna import AdzunaClient
 
 
 class FakeClock:

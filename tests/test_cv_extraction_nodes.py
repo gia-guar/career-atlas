@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 
-from job_universe.pipelines.cv_extraction import nodes as cv_nodes
-from job_universe.schemas import CVProfile
+from career_atlas.pipelines.cv_extraction import nodes as cv_nodes
+from career_atlas.schemas import CVProfile
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
