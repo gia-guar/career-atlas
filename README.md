@@ -2,8 +2,9 @@
 
 [![Built on Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
 
+<div align="center">
 <img src="assets/logo.png" alt="CareerAtlas logo" style="width: 300px; height: 300px;">
-
+</div>
 # CareerAtlas
 
 ### Explore where your skills sit in the global job market
